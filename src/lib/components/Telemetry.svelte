@@ -1,33 +1,28 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	let { index = true }: { index?: boolean } = $props();
-
-	let shown = $state(false); // entrance
-	let hidden = $state(false); // fade out once scrolled into content (avoids colliding with text)
+	let scrollY = $state(0);
+	let entered = $state(false);
 
 	onMount(() => {
-		const t = setTimeout(() => (shown = true), 300);
-		const onScroll = () => {
-			hidden = window.scrollY > window.innerHeight * 0.4;
-		};
+		requestAnimationFrame(() => (entered = true));
+		const onScroll = () => (scrollY = window.scrollY);
 		onScroll();
 		window.addEventListener('scroll', onScroll, { passive: true });
-		return () => {
-			clearTimeout(t);
-			window.removeEventListener('scroll', onScroll);
-		};
+		return () => window.removeEventListener('scroll', onScroll);
 	});
+
+	// present on every page, but fades out fast as you scroll (so it never collides
+	// with the page heading) and fades back in at the top. Scroll-linked = no lag.
+	const op = $derived(Math.max(0, Math.min(1, 1 - scrollY / 38)));
 </script>
 
-<!-- top-left status readout — index/home only; on content pages you're already "inside" -->
-{#if index}
-	<div class="telem" class:shown class:hidden aria-hidden="true">
-		<span class="led"></span><span class="s">system online</span><br />
-		node: ag-core · Porto, PT · 41.1°N<br />
-		uptime 99.98% · since 2024
-	</div>
-{/if}
+<!-- top-left status readout — on every page; fades on scroll to stay out of the text -->
+<div class="telem" class:entered style="opacity: {op}" aria-hidden="true">
+	<span class="led"></span><span class="s">system online</span><br />
+	node: ag-core · Porto, PT · 41.1°N<br />
+	uptime 99.98% · since 2024
+</div>
 
 <style>
 	.telem {
@@ -40,21 +35,12 @@
 		letter-spacing: 0.05em;
 		color: var(--dim);
 		line-height: 1.85;
-		opacity: 0;
-		transform: translateY(-4px);
-		transition:
-			opacity 0.5s ease,
-			transform 0.5s ease;
-	}
-	.telem.shown {
-		opacity: 1;
-		transform: none;
-	}
-	/* once scrolled into content, get out of the way */
-	.telem.shown.hidden {
-		opacity: 0;
-		transform: translateY(-4px);
 		pointer-events: none;
+		transform: translateY(-4px);
+		transition: transform 0.5s ease;
+	}
+	.telem.entered {
+		transform: none;
 	}
 	.s {
 		color: var(--sig);

@@ -18,7 +18,7 @@
 
 <!-- persistent "observable system" shell, shared across every page -->
 <SchematicCanvas dim={dimGraph} />
-<Telemetry index={!dimGraph} />
+<Telemetry />
 
 <div class="content">
 	{@render children()}
