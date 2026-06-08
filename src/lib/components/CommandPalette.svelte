@@ -12,7 +12,13 @@
 		{ label: 'Selected work', meta: 'work', href: '/work', ic: '→' },
 		{ label: 'About', meta: 'about', href: '/about', ic: '→' },
 		{ label: 'Colophon', meta: "how it's built", href: '/colophon', ic: '→' },
-		{ label: 'Email', meta: 'hi@guimara.es', href: 'mailto:hi@guimara.es', ic: '@', external: true },
+		{
+			label: 'Email',
+			meta: 'f.guimaraes@adayindouro.com',
+			href: 'mailto:f.guimaraes@adayindouro.com',
+			ic: '@',
+			external: true
+		},
 		{
 			label: 'GitHub',
 			meta: 'lotsofsmiley',

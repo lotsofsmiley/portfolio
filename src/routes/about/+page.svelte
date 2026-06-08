@@ -58,7 +58,7 @@
 	</div>
 
 	<div class="contact rise" style="animation-delay: 0.38s">
-		<a href="mailto:hi@guimara.es">hi@guimara.es</a>
+		<a href="mailto:f.guimaraes@adayindouro.com">f.guimaraes@adayindouro.com</a>
 		<a href="https://github.com/lotsofsmiley" target="_blank" rel="noopener noreferrer"
 			>github.com/lotsofsmiley</a
 		>
