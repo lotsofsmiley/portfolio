@@ -7,7 +7,7 @@ homepage is a living node-graph that breathes and reacts to the cursor; navigati
 `/` command palette; a single coral signal colour runs throughout. No template, no UI
 kit — built by hand.
 
-> **Live:** _coming soon_ · the site explains how it's made at `/colophon`
+> **Live:** **[guimaraes.systems](https://guimaraes.systems)** · the site explains how it's made at `/colophon`
 
 ## Stack
 
