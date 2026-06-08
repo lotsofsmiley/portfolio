@@ -39,4 +39,4 @@ src/
 
 ---
 
-Built by [António Guimarães](https://github.com/lotsofsmiley).
+Built by [António Guimarães](https://github.com/lotsofsmiley) · [MIT](LICENSE)
