@@ -2,7 +2,7 @@
 	import { tick } from 'svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { onNavigate } from '$app/navigation';
+	import { goto, onNavigate } from '$app/navigation';
 	import { ui } from '$lib/ui.svelte';
 
 	type Item = { label: string; meta: string; href: string; ic: string; external?: boolean };
@@ -31,6 +31,7 @@
 	let open = $state(false);
 	let query = $state('');
 	let input = $state<HTMLInputElement | null>(null);
+	let selected = $state(0);
 
 	const filtered = $derived(
 		items.filter((i) => (i.label + ' ' + i.meta).toLowerCase().includes(query.toLowerCase()))
@@ -40,6 +41,7 @@
 		open = true;
 		ui.paletteOpen = true; // freeze the canvas while open
 		query = '';
+		selected = 0;
 		await tick();
 		input?.focus();
 	}
@@ -48,15 +50,40 @@
 		ui.paletteOpen = false;
 	}
 
+	function activate(it: Item) {
+		closePalette();
+		if (it.external) {
+			if (it.href.startsWith('mailto:')) window.location.href = it.href;
+			else window.open(it.href, '_blank', 'noopener');
+		} else {
+			goto(it.href);
+		}
+	}
+
 	function onKey(e: KeyboardEvent) {
-		const tag = (document.activeElement?.tagName ?? '').toUpperCase();
-		const typing = tag === 'INPUT' || tag === 'TEXTAREA';
-		// "/" opens — Ctrl/Cmd+K is reserved by every browser, so we deliberately don't use it
-		if (e.key === '/' && !typing && !open) {
-			e.preventDefault();
-			openPalette();
-		} else if (e.key === 'Escape') {
+		if (!open) {
+			const tag = (document.activeElement?.tagName ?? '').toUpperCase();
+			const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+			// "/" opens — Ctrl/Cmd+K is reserved by every browser, so we deliberately don't use it
+			if (e.key === '/' && !typing) {
+				e.preventDefault();
+				openPalette();
+			}
+			return;
+		}
+		// palette open → arrow keys move the selection, Enter activates it
+		const n = filtered.length;
+		if (e.key === 'Escape') {
 			closePalette();
+		} else if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			if (n) selected = (selected + 1) % n;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			if (n) selected = (selected - 1 + n) % n;
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			if (n) activate(filtered[Math.min(selected, n - 1)]);
 		}
 	}
 
@@ -87,6 +114,7 @@
 		<input
 			bind:this={input}
 			bind:value={query}
+			oninput={() => (selected = 0)}
 			type="text"
 			name="q"
 			placeholder="Type a page or action…"
@@ -100,9 +128,11 @@
 			data-form-type="other"
 		/>
 		<div class="list">
-			{#each filtered as it (it.href)}
+			{#each filtered as it, i (it.href)}
 				<a
 					href={it.href}
+					class:sel={i === selected}
+					onmouseenter={() => (selected = i)}
 					onclick={closePalette}
 					target={it.external ? '_blank' : undefined}
 					rel={it.external ? 'noopener noreferrer' : undefined}
@@ -216,8 +246,9 @@
 		font-size: 11px;
 		color: var(--faint);
 	}
-	.list a:hover {
-		background: rgba(var(--sig-rgb), 0.1);
+	.list a:hover,
+	.list a.sel {
+		background: rgba(var(--sig-rgb), 0.12);
 	}
 	.empty {
 		padding: 14px;

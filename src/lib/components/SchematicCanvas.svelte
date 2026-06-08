@@ -17,6 +17,8 @@
 	type Node = {
 		x: number;
 		y: number;
+		mx: number; // mobile x (graph spreads full-width on narrow screens)
+		my: number; // mobile y
 		r: number;
 		core?: boolean;
 		label?: string;
@@ -37,11 +39,13 @@
 			H = 0,
 			DPR = 1,
 			raf = 0,
+			mobile = false,
 			mx = -1e4,
 			my = -1e4;
 
 		function size() {
 			DPR = Math.min(window.devicePixelRatio || 1, 2);
+			mobile = window.innerWidth < 760;
 			W = canvas.width = window.innerWidth * DPR;
 			H = canvas.height = window.innerHeight * DPR;
 			canvas.style.width = window.innerWidth + 'px';
@@ -60,13 +64,15 @@
 		window.addEventListener('mousemove', onMove, { passive: true });
 		document.addEventListener('mouseleave', onLeave);
 
+		// desktop: clustered right (clears the hero text on the left).
+		// mobile: spread into a centred constellation so it's ambient, not bunched right.
 		const N: Node[] = [
-			{ x: 0.6, y: 0.5, r: 9, core: true, ph: 0, sp: 0, hl: 0 },
-			{ x: 0.79, y: 0.29, r: 5, label: 'web', ph: 0, sp: 0, hl: 0 },
-			{ x: 0.92, y: 0.45, r: 5, label: 'data', ph: 0, sp: 0, hl: 0 },
-			{ x: 0.86, y: 0.66, r: 5, label: 'infra', ph: 0, sp: 0, hl: 0 },
-			{ x: 0.69, y: 0.75, r: 5, label: 'automation', ph: 0, sp: 0, hl: 0 },
-			{ x: 0.94, y: 0.31, r: 4, label: 'commerce', ph: 0, sp: 0, hl: 0 }
+			{ x: 0.6, y: 0.5, mx: 0.5, my: 0.5, r: 9, core: true, ph: 0, sp: 0, hl: 0 },
+			{ x: 0.79, y: 0.29, mx: 0.22, my: 0.3, r: 5, label: 'web', ph: 0, sp: 0, hl: 0 },
+			{ x: 0.92, y: 0.45, mx: 0.8, my: 0.34, r: 5, label: 'data', ph: 0, sp: 0, hl: 0 },
+			{ x: 0.86, y: 0.66, mx: 0.82, my: 0.7, r: 5, label: 'infra', ph: 0, sp: 0, hl: 0 },
+			{ x: 0.69, y: 0.75, mx: 0.28, my: 0.74, r: 5, label: 'automation', ph: 0, sp: 0, hl: 0 },
+			{ x: 0.94, y: 0.31, mx: 0.62, my: 0.16, r: 4, label: 'commerce', ph: 0, sp: 0, hl: 0 }
 		];
 		const E = [
 			[0, 1],
@@ -81,11 +87,18 @@
 			n.ph = Math.random() * 6.28;
 			n.sp = 0.35 + Math.random() * 0.4;
 		});
-		const packets = E.map(() => ({ t: Math.random(), sp: 0.1 + Math.random() * 0.16 }));
+		// each packet gets its own size — the "information" flowing is different-sized packages
+		const packets = E.map(() => ({
+			t: Math.random(),
+			sp: 0.1 + Math.random() * 0.16,
+			size: 0.6 + Math.random() * 1.2
+		}));
 		const start = performance.now();
 
 		function pos(n: Node): [number, number] {
-			return [(n.x + Math.cos(n.ph) * 0.006) * W, (n.y + Math.sin(n.ph) * 0.008) * H];
+			const bx = mobile ? n.mx : n.x;
+			const by = mobile ? n.my : n.y;
+			return [(bx + Math.cos(n.ph) * 0.006) * W, (by + Math.sin(n.ph) * 0.008) * H];
 		}
 
 		const HIT = 52; // hover radius in CSS px
@@ -133,8 +146,8 @@
 					if (pk.t > 1) pk.t -= 1;
 					const px = ax + (bx - ax) * pk.t;
 					const py = ay + (by - ay) * pk.t;
-					dot(px, py, 5 * DPR, `rgba(${RGB},0.16)`); // halo
-					dot(px, py, 2.2 * DPR, `rgba(${RGB},0.9)`); // core
+					dot(px, py, 5 * DPR * pk.size, `rgba(${RGB},0.16)`); // halo — varied packet size
+					dot(px, py, 2.2 * DPR * pk.size, `rgba(${RGB},0.9)`); // core
 				}
 			});
 
@@ -165,13 +178,15 @@
 					ctx.beginPath();
 					ctx.arc(x, y, r, 0, 6.28);
 					ctx.stroke();
-					// label — tints grey → coral on hover
-					const lr = Math.round(165 + (255 - 165) * hl);
-					const lg = Math.round(180 + (106 - 180) * hl);
-					const lb = Math.round(190 + (69 - 190) * hl);
-					ctx.fillStyle = `rgba(${lr},${lg},${lb},${0.7 + 0.3 * hl})`;
-					ctx.font = `${11 * DPR}px 'IBM Plex Mono',monospace`;
-					ctx.fillText(n.label ?? '', x + r + 8 * DPR, y + 4 * DPR);
+					// label — tints grey → coral on hover; hidden on mobile to avoid colliding with text
+					if (!mobile) {
+						const lr = Math.round(165 + (255 - 165) * hl);
+						const lg = Math.round(180 + (106 - 180) * hl);
+						const lb = Math.round(190 + (69 - 190) * hl);
+						ctx.fillStyle = `rgba(${lr},${lg},${lb},${0.7 + 0.3 * hl})`;
+						ctx.font = `${11 * DPR}px 'IBM Plex Mono',monospace`;
+						ctx.fillText(n.label ?? '', x + r + 8 * DPR, y + 4 * DPR);
+					}
 				}
 			});
 

@@ -1,5 +1,25 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+
+	let shown = $state(false); // entrance
+	let hidden = $state(false); // fade out once scrolled into content (avoids colliding with text)
+
+	onMount(() => {
+		const t = setTimeout(() => (shown = true), 300);
+		const onScroll = () => {
+			hidden = window.scrollY > window.innerHeight * 0.4;
+		};
+		onScroll();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => {
+			clearTimeout(t);
+			window.removeEventListener('scroll', onScroll);
+		};
+	});
+</script>
+
 <!-- top-left status readout — small "this is a live system" signal -->
-<div class="telem" aria-hidden="true">
+<div class="telem" class:shown class:hidden aria-hidden="true">
 	<span class="led"></span><span class="s">system online</span><br />
 	node: ag-core · Porto, PT · 41.1°N<br />
 	uptime 99.98% · since 2024
@@ -17,7 +37,20 @@
 		color: var(--dim);
 		line-height: 1.85;
 		opacity: 0;
-		animation: fade 1s 0.3s forwards;
+		transform: translateY(-4px);
+		transition:
+			opacity 0.5s ease,
+			transform 0.5s ease;
+	}
+	.telem.shown {
+		opacity: 1;
+		transform: none;
+	}
+	/* once scrolled into content, get out of the way */
+	.telem.shown.hidden {
+		opacity: 0;
+		transform: translateY(-4px);
+		pointer-events: none;
 	}
 	.s {
 		color: var(--sig);
@@ -42,15 +75,9 @@
 			opacity: 0.3;
 		}
 	}
-	@keyframes fade {
-		to {
-			opacity: 1;
-		}
-	}
 	@media (prefers-reduced-motion: reduce) {
 		.telem {
-			opacity: 1;
-			animation: none;
+			transition: none;
 		}
 		.led {
 			animation: none;
