@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	let { index = true }: { index?: boolean } = $props();
+
 	let shown = $state(false); // entrance
 	let hidden = $state(false); // fade out once scrolled into content (avoids colliding with text)
 
@@ -18,12 +20,14 @@
 	});
 </script>
 
-<!-- top-left status readout — small "this is a live system" signal -->
-<div class="telem" class:shown class:hidden aria-hidden="true">
-	<span class="led"></span><span class="s">system online</span><br />
-	node: ag-core · Porto, PT · 41.1°N<br />
-	uptime 99.98% · since 2024
-</div>
+<!-- top-left status readout — index/home only; on content pages you're already "inside" -->
+{#if index}
+	<div class="telem" class:shown class:hidden aria-hidden="true">
+		<span class="led"></span><span class="s">system online</span><br />
+		node: ag-core · Porto, PT · 41.1°N<br />
+		uptime 99.98% · since 2024
+	</div>
+{/if}
 
 <style>
 	.telem {
