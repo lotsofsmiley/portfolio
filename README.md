@@ -1,42 +1,42 @@
-# sv
+# portfolio
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+The personal site of **António Guimarães** — systems & software, from Porto.
 
-## Creating a project
+A portfolio that behaves like the kind of thing I build: an **observable system**. The
+homepage is a living node-graph that breathes and reacts to the cursor; navigation is a
+`/` command palette; a single coral signal colour runs throughout. No template, no UI
+kit — built by hand.
 
-If you're seeing this, you've probably already done this step. Congrats!
+> **Live:** _coming soon_ · the site explains how it's made at `/colophon`
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Stack
 
-To recreate this project with the same configuration:
+- **[SvelteKit](https://svelte.dev/docs/kit)** — Svelte 5, static & fully prerendered (`adapter-static`)
+- **TypeScript** + hand-written scoped CSS (no Tailwind, no component library)
+- A `<canvas>` node-graph + Svelte transitions for the motion
+- Type: **Inter Tight** · **IBM Plex Mono**
 
-```sh
-# recreate this project
-npx sv@0.15.4 create --template minimal --types ts --add prettier sveltekit-adapter="adapter:static" --no-download-check --install npm C:/add/dev/portfolio
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Develop
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+npm install
+npm run dev        # http://localhost:5173
 ```
-
-## Building
-
-To create a production version of your app:
 
 ```sh
-npm run build
+npm run build      # static output → build/
+npm run preview
 ```
 
-You can preview the production build with `npm run preview`.
+## Structure
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```
+src/
+├─ routes/                 index · work · about · colophon
+├─ lib/components/         SchematicCanvas · CommandPalette · Telemetry
+└─ app.css                 design tokens — retheme via the single --sig colour
+```
+
+---
+
+Built by [António Guimarães](https://github.com/lotsofsmiley).
